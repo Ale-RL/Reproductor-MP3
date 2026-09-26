@@ -31,35 +31,77 @@ namespace Reproductor_MP3
 
         }
 
-        private void btnPlay_Click(object sender, EventArgs e)
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            reproductor.controls.stop();
+            btnPlayPause.Image = new Bitmap(Properties.Resources.IconPlay, new Size(30, 30));
+            estaReproduciendo = false;
+        }
+
+        /// ===========================
+        /// Liberar el reproductor al cerrar el formulario
+        /// ===========================
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            reproductor.controls.stop();
+            reproductor.close();
+            base.OnFormClosing(e);
+        }
+        
+        private bool estaReproduciendo = false;
+        //Esto es por si acaso lo vuelvo a usar
+        private Image iconoPlay = new Bitmap(Properties.Resources.IconPlay, new Size(42, 42));
+        private Image iconoPause = new Bitmap(Properties.Resources.IconPause, new Size(42, 42));
+
+        private void btnAbrir_Click(object sender, EventArgs e)
+        {
+
+            DialogResult resultado = openFileDialog1.ShowDialog();
+            if (resultado == DialogResult.OK)
+            {
+                reproductor.controls.stop();
+
+                archivoSeleccionado = openFileDialog1.FileName;
+                lbArchivo.Text = "Archivo seleccionado: " + Path.GetFileName(archivoSeleccionado);
+
+                reproductor.URL = archivoSeleccionado;
+                reproductor.controls.play();
+
+                btnPlayPause.Image = new Bitmap(Properties.Resources.IconPause, new Size(42, 42));
+                estaReproduciendo = true;
+            }
+
+        }
+
+
+        private void btnPlayPause_Click(object sender, EventArgs e)
         {
             try
             {
-                //Si no hay un archivo seleecionado
-                //Abrimos el explorador de archivos
                 if (string.IsNullOrEmpty(archivoSeleccionado))
                 {
-                    DialogResult resultado =
-                        openFileDialog1.ShowDialog();
-                    //El usuario cancelo la selección 
+                    DialogResult resultado = openFileDialog1.ShowDialog();
                     if (resultado != DialogResult.OK)
                     {
                         return;
                     }
-                    //Guardar la ruta del archivo
-                    archivoSeleccionado = 
-                        openFileDialog1.FileName;
-                    //Mostramos el nombre del archivo en el label
-                    lbArchivo.Text = "Archivo seleccionado: " +
-                        Path.GetFileName(archivoSeleccionado);
-                
+                    archivoSeleccionado = openFileDialog1.FileName;
+                    lbArchivo.Text = "Archivo seleccionado: " + Path.GetFileName(archivoSeleccionado);
+                    reproductor.URL = archivoSeleccionado;
                 }
 
-                //Indicamos al reproductor que reproduzca el archivo seleccionado
-                reproductor.URL = archivoSeleccionado;
-                //Reproducir sonido
-                reproductor.controls.play();
-
+                if (!estaReproduciendo)
+                {
+                    reproductor.controls.play();
+                    btnPlayPause.Image = new Bitmap(Properties.Resources.IconPause, new Size(42, 42));
+                    estaReproduciendo = true;
+                }
+                else
+                {
+                    reproductor.controls.pause();
+                    btnPlayPause.Image = new Bitmap(Properties.Resources.IconPlay, new Size(42, 42));
+                    estaReproduciendo = false;
+                }
             }
             catch (Exception ex)
             {
